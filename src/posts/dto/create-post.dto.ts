@@ -7,6 +7,8 @@ import {
   MaxLength,
   MinLength,
   ArrayUnique,
+  IsMongoId,
+  ArrayMinSize,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
@@ -14,19 +16,21 @@ export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   title: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(10)
+  @MinLength(10, { message: 'Content must be at least 10 characters long' })
   @MaxLength(20000)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   content: string;
 
   @IsBoolean()
   @IsOptional()
   published?: boolean;
 
-  @Type(() => String)
+  @IsMongoId({ message: 'Invalid author ID format' })
   @IsNotEmpty()
   authorId: string;
 
@@ -34,11 +38,7 @@ export class CreatePostDto {
   @IsArray()
   @IsNotEmpty()
   @Type(() => String)
-  @Transform(({ value }) => {
-    if (Array.isArray(value) && value.length === 0) {
-      throw new Error('At least one category is required');
-    }
-    return value;
-  })
+  @IsMongoId({ each: true, message: 'Invalid category ID format' })
+  @ArrayMinSize(1, { message: 'At least one category is required' })
   categoryIds: string[];
 }
