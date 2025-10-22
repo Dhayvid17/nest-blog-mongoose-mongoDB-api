@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # NestJS Backend Application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: nest-blog-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - '3001:3000' # Exposes App port External :3001, Internal :3000
+    environment:
+      MONGODB_URI: ${MONGODB_URI}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000 # App listens on 3000 internally
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - nest-network
+    command: npm run start:dev
+networks:
+  nest-network:
+    driver: bridge
